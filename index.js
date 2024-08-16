@@ -30,11 +30,35 @@ async function run() {
 
     const information = client.db('search-craft').collection('information')
 
-
     app.get('/information', async (req, res) => {
-      const data = await information.find().toArray();
-      res.send(data);
-    })
+      try {
+        const page = parseInt(req.query.page) || 1; // Default to page 1 if not specified
+        const limit = parseInt(req.query.limit) || 10; // Default to 10 items per page if not specified
+        const skip = (page - 1) * limit;
+    
+        const sortField = req.query.sort || 'createdAt'; // Default sorting field
+        const sortOrder = req.query.order === 'desc' ? -1 : 1; // Default to ascending order
+    
+        const query = {}; // Add any filters you want here
+    
+        const totalDocuments = await information.countDocuments(query); // Total documents in the collection
+        const data = await information.find(query)
+          .sort({ [sortField]: sortOrder }) // Apply sorting
+          .skip(skip)
+          .limit(limit)
+          .toArray();
+    
+        res.send({
+          data,
+          currentPage: page,
+          totalPages: Math.ceil(totalDocuments / limit),
+          totalDocuments
+        });
+      } catch (error) {
+        res.status(500).send({ error: 'An error occurred while fetching data.' });
+      }
+    });
+    
 
 
 
