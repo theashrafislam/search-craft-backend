@@ -22,20 +22,25 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // Connect the client to the server (optional starting in v4.7)
+    // Connect the client to the server
     await client.connect();
 
     const information = client.db('search-craft').collection('information');
 
     app.get('/information', async (req, res) => {
       try {
-        const page = parseInt(req.query.page) || 1; // Default to page 1 if not specified
-        const limit = parseInt(req.query.limit) || 10; // Default to 10 items per page if not specified
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
-    
+
         const sortField = req.query.sort || 'createdAt'; // Default sorting field
         const sortOrder = req.query.order === 'desc' ? -1 : 1; // Default to ascending order
-    
+
+        // Sorting based on category and brand
+        const sortCriteria = {
+          [sortField]: sortOrder
+        };
+
         const searchQuery = req.query.search ? {
           name: { $regex: new RegExp(req.query.search, 'i') } // Case-insensitive search
         } : {};
@@ -48,14 +53,14 @@ async function run() {
           ...(req.query.minPrice && { price: { $gte: parseFloat(req.query.minPrice) } }),
           ...(req.query.maxPrice && { price: { $lte: parseFloat(req.query.maxPrice) } })
         };
-    
+
         const totalDocuments = await information.countDocuments(filters); // Total documents in the collection
         const data = await information.find(filters)
-          .sort({ [sortField]: sortOrder }) // Apply sorting
+          .sort(sortCriteria) // Apply sorting
           .skip(skip)
           .limit(limit)
           .toArray();
-    
+
         res.send({
           data,
           currentPage: page,
@@ -82,5 +87,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  console.log(`Server listening on port ${port}`);
 });
