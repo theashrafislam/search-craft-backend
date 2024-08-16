@@ -22,29 +22,18 @@ This project provides a backend API for managing and searching product informati
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/theashrafislam/search-craft-backend
+   git clone https://github.com/your-username/backend-repo.git
    cd backend-repo
 Install dependencies: npm install
-
-bash
-Copy code
-npm install
 Create a .env file:
 
 In the root of the project, create a .env file and add the following environment variables:
-
-bash
-Copy code
-PORT=5000,
-DB_USER=your_db_user,
-DB_PASS=your_db_password,
+PORT=5000
+DB_USER=your_db_user
+DB_PASS=your_db_password
 Replace your_db_user and your_db_password with your actual MongoDB credentials.
 
 Start the server: npm start
-
-bash
-Copy code
-npm start
 The server should now be running on http://localhost:5000.
 
 API Endpoints
