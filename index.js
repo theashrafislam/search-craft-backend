@@ -1,15 +1,12 @@
-const express = require('express')
-const app = express()
+const express = require('express');
+const app = express();
 const cors = require('cors');
-require('dotenv').config()
+require('dotenv').config();
 const port = process.env.PORT || 5000;
 
-//middlewere
+// Middleware
 app.use(cors());
 app.use(express.json());
-
-console.log(process.env.DB_USER);
-
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.gphdl2n.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -25,10 +22,10 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
+    // Connect the client to the server (optional starting in v4.7)
     await client.connect();
 
-    const information = client.db('search-craft').collection('information')
+    const information = client.db('search-craft').collection('information');
 
     app.get('/information', async (req, res) => {
       try {
@@ -39,10 +36,21 @@ async function run() {
         const sortField = req.query.sort || 'createdAt'; // Default sorting field
         const sortOrder = req.query.order === 'desc' ? -1 : 1; // Default to ascending order
     
-        const query = {}; // Add any filters you want here
+        const searchQuery = req.query.search ? {
+          name: { $regex: new RegExp(req.query.search, 'i') } // Case-insensitive search
+        } : {};
+
+        // Apply additional filters
+        const filters = {
+          ...searchQuery,
+          ...(req.query.brand && { brand: req.query.brand }),
+          ...(req.query.category && { category: req.query.category }),
+          ...(req.query.minPrice && { price: { $gte: parseFloat(req.query.minPrice) } }),
+          ...(req.query.maxPrice && { price: { $lte: parseFloat(req.query.maxPrice) } })
+        };
     
-        const totalDocuments = await information.countDocuments(query); // Total documents in the collection
-        const data = await information.find(query)
+        const totalDocuments = await information.countDocuments(filters); // Total documents in the collection
+        const data = await information.find(filters)
           .sort({ [sortField]: sortOrder }) // Apply sorting
           .skip(skip)
           .limit(limit)
@@ -58,13 +66,6 @@ async function run() {
         res.status(500).send({ error: 'An error occurred while fetching data.' });
       }
     });
-    
-
-
-
-
-
-
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
@@ -76,11 +77,10 @@ async function run() {
 }
 run().catch(console.dir);
 
-
 app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
+  res.send('Hello World!');
+});
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+  console.log(`Example app listening on port ${port}`);
+});
