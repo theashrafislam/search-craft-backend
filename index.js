@@ -54,7 +54,7 @@ async function run() {
 
         const totalDocuments = await information.countDocuments(filters);
         const data = await information.find(filters)
-          .sort(sortCriteria) // Apply sorting
+          .sort(sortCriteria)
           .skip(skip)
           .limit(limit)
           .toArray();
