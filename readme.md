@@ -1,4 +1,4 @@
-# Product Search API
+# Search Craft
 
 This project provides a backend API for managing and searching product information using Express.js and MongoDB. The API supports filtering, sorting, and pagination of product data.
 
