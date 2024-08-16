@@ -44,7 +44,6 @@ async function run() {
           name: { $regex: new RegExp(req.query.search, 'i') }
         } : {};
 
-        // Apply additional filters
         const filters = {
           ...searchQuery,
           ...(req.query.brand && { brand: req.query.brand }),
@@ -53,7 +52,7 @@ async function run() {
           ...(req.query.maxPrice && { price: { $lte: parseFloat(req.query.maxPrice) } })
         };
 
-        const totalDocuments = await information.countDocuments(filters); // Total documents in the collection
+        const totalDocuments = await information.countDocuments(filters);
         const data = await information.find(filters)
           .sort(sortCriteria) // Apply sorting
           .skip(skip)
