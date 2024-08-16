@@ -24,7 +24,7 @@ This project provides a backend API for managing and searching product informati
    ```bash
    git clone https://github.com/your-username/backend-repo.git
    cd backend-repo
-Install dependencies:
+Install dependencies: npm install
 
 bash
 Copy code
@@ -40,7 +40,7 @@ DB_USER=your_db_user
 DB_PASS=your_db_password
 Replace your_db_user and your_db_password with your actual MongoDB credentials.
 
-Start the server:
+Start the server: npm start
 
 bash
 Copy code
