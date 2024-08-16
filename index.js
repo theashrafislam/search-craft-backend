@@ -33,16 +33,15 @@ async function run() {
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
 
-        const sortField = req.query.sort || 'createdAt'; // Default sorting field
-        const sortOrder = req.query.order === 'desc' ? -1 : 1; // Default to ascending order
+        const sortField = req.query.sort || 'createdAt';
+        const sortOrder = req.query.order === 'desc' ? -1 : 1;
 
-        // Sorting based on category and brand
         const sortCriteria = {
           [sortField]: sortOrder
         };
 
         const searchQuery = req.query.search ? {
-          name: { $regex: new RegExp(req.query.search, 'i') } // Case-insensitive search
+          name: { $regex: new RegExp(req.query.search, 'i') }
         } : {};
 
         // Apply additional filters
