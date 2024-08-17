@@ -3,13 +3,13 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-const port = process.env.PORT || 5000; // Define the port for local testing
+const port = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.gphdl2n.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.gphdl2n.mongodb.net/?retryWrites=true&w=majority`;
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -23,27 +23,15 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    let isConnected = false;
+    console.log("Attempting to connect to MongoDB...");
 
-    for (let i = 0; i < 5; i++) {
-      try {
-        await client.connect();
-        console.log('Connected to MongoDB');
-        isConnected = true;
-        break;
-      } catch (error) {
-        console.error('Connection failed, retrying...', error);
-        await new Promise(resolve => setTimeout(resolve, 5000)); // Wait for 5 seconds before retrying
-      }
-    }
-
-    if (!isConnected) {
-      console.error('Could not connect to MongoDB after several attempts.');
-      process.exit(1); // Exit the process if unable to connect after retries
-    }
+    // Try connecting to MongoDB
+    await client.connect();
+    console.log('Connected to MongoDB successfully.');
 
     const information = client.db('search-craft').collection('information');
 
+    // Fetch information with filters, sorting, and pagination
     app.get('/information', async (req, res) => {
       try {
         const page = parseInt(req.query.page) || 1;
@@ -54,23 +42,24 @@ async function run() {
         const sortOrder = req.query.order === 'desc' ? -1 : 1;
 
         const sortCriteria = {
-          [sortField]: sortOrder
+          [sortField]: sortOrder,
         };
 
-        const searchQuery = req.query.search ? {
-          name: { $regex: new RegExp(req.query.search, 'i') }
-        } : {};
+        const searchQuery = req.query.search
+          ? { name: { $regex: new RegExp(req.query.search, 'i') } }
+          : {};
 
         const filters = {
           ...searchQuery,
           ...(req.query.brand && { brand: req.query.brand }),
           ...(req.query.category && { category: req.query.category }),
           ...(req.query.minPrice && { price: { $gte: parseFloat(req.query.minPrice) } }),
-          ...(req.query.maxPrice && { price: { $lte: parseFloat(req.query.maxPrice) } })
+          ...(req.query.maxPrice && { price: { $lte: parseFloat(req.query.maxPrice) } }),
         };
 
         const totalDocuments = await information.countDocuments(filters);
-        const data = await information.find(filters)
+        const data = await information
+          .find(filters)
           .sort(sortCriteria)
           .skip(skip)
           .limit(limit)
@@ -80,7 +69,7 @@ async function run() {
           data,
           currentPage: page,
           totalPages: Math.ceil(totalDocuments / limit),
-          totalDocuments
+          totalDocuments,
         });
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -88,17 +77,19 @@ async function run() {
       }
     });
 
+    // Test the connection with a ping command
     await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    console.log("Pinged MongoDB deployment. Connection is stable.");
 
+    // Graceful shutdown for MongoDB client
     process.on('SIGINT', async () => {
-      console.log('Closing MongoDB connection due to process termination');
+      console.log('Closing MongoDB connection due to process termination...');
       await client.close();
       process.exit(0);
     });
-
   } catch (err) {
-    console.error('Failed to connect to MongoDB:', err);
+    console.error('Failed to connect to MongoDB:', err.message);
+    process.exit(1); // Exit the process if connection fails
   }
 }
 
