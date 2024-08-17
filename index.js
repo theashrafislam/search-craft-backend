@@ -27,6 +27,8 @@ async function run() {
 
     const information = client.db('search-craft').collection('information');
 
+
+
     app.get('/information', async (req, res) => {
       try {
         const page = parseInt(req.query.page) || 1;
@@ -69,6 +71,8 @@ async function run() {
         res.status(500).send({ error: 'An error occurred while fetching data.' });
       }
     });
+
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
