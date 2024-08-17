@@ -22,7 +22,7 @@ This project provides a backend API for managing and searching product informati
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/your-username/backend-repo.git
+   git clone https://github.com/theashrafislam/search-craft-backend
    cd backend-repo
 Install dependencies: npm install
 Create a .env file:
