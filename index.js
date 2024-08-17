@@ -21,15 +21,15 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // Retry logic for connecting to MongoDB
+    
     for (let i = 0; i < 5; i++) {
       try {
         await client.connect();
         console.log('Connected to MongoDB');
-        break; // Exit loop if connection is successful
+        break;
       } catch (error) {
         console.error('Connection failed, retrying...', error);
-        await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds before retrying
+        await new Promise(resolve => setTimeout(resolve, 5000));
       }
     }
 
