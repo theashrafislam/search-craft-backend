@@ -16,21 +16,30 @@ const client = new MongoClient(uri, {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-  }
+  },
+  connectTimeoutMS: 10000, // 10 seconds timeout
+  socketTimeoutMS: 45000,  // 45 seconds timeout
 });
 
 async function run() {
   try {
-    
+    let isConnected = false;
+
     for (let i = 0; i < 5; i++) {
       try {
         await client.connect();
         console.log('Connected to MongoDB');
+        isConnected = true;
         break;
       } catch (error) {
         console.error('Connection failed, retrying...', error);
-        await new Promise(resolve => setTimeout(resolve, 5000));
+        await new Promise(resolve => setTimeout(resolve, 5000)); // Wait for 5 seconds before retrying
       }
+    }
+
+    if (!isConnected) {
+      console.error('Could not connect to MongoDB after several attempts.');
+      process.exit(1); // Exit the process if unable to connect after retries
     }
 
     const information = client.db('search-craft').collection('information');
@@ -74,12 +83,20 @@ async function run() {
           totalDocuments
         });
       } catch (error) {
+        console.error('Error fetching data:', error);
         res.status(500).send({ error: 'An error occurred while fetching data.' });
       }
     });
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
+
+    process.on('SIGINT', async () => {
+      console.log('Closing MongoDB connection due to process termination');
+      await client.close();
+      process.exit(0);
+    });
+
   } catch (err) {
     console.error('Failed to connect to MongoDB:', err);
   }
