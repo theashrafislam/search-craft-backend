@@ -24,7 +24,7 @@ async function run() {
     await client.connect();
     const information = client.db('search-craft').collection('information');
 
-    app.get('/api/information', async (req, res) => {
+    app.get('/information', async (req, res) => {
       try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
@@ -76,7 +76,7 @@ async function run() {
 
 run().catch(console.dir);
 
-app.get('/api', (req, res) => {
+app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
