@@ -21,7 +21,18 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    await client.connect();
+    // Retry logic for connecting to MongoDB
+    for (let i = 0; i < 5; i++) {
+      try {
+        await client.connect();
+        console.log('Connected to MongoDB');
+        break; // Exit loop if connection is successful
+      } catch (error) {
+        console.error('Connection failed, retrying...', error);
+        await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds before retrying
+      }
+    }
+
     const information = client.db('search-craft').collection('information');
 
     app.get('/information', async (req, res) => {
@@ -70,7 +81,7 @@ async function run() {
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } catch (err) {
-    console.error(err);
+    console.error('Failed to connect to MongoDB:', err);
   }
 }
 
